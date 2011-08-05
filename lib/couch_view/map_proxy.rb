@@ -35,7 +35,6 @@ module CouchView
 
       def _map
         map_name = [@_map.to_s, @_conditions.sort.join("_")]
-        puts map_name.inspect
         map_name.reject! &:blank?
         map_name.join("_").to_sym
       end
