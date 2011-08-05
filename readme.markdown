@@ -43,14 +43,14 @@ Now, you can use this in your `CouchRest::Model::Base` class thusly:
       map ByLabel
     end
 
-This will generate a map `by_id` on `Article` that looks like this:
+This will generate a map `by_label` on `Article` that looks like this:
 
     function(doc){
       if (doc['couchrest-type'] == 'Article')
         emit(doc.label, null) 
     }
 
-If you'd like to also count by id, you could use the `map_and_count` method instead:
+If you'd like to also count by label, you could use the `map_and_count` method instead:
 
     class Article < CouchRest::Model::Base
       include CouchMap

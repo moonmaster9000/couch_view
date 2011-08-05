@@ -4,23 +4,44 @@ Feature: CouchView::Map
   So that I can create a class with a CouchDB map function
 
   Scenario: Default map
-    Given an empty class Map that includes CouchView::Map
-    When I execute "Map.new.map"
-    Then I should get
+    Given an empty class Map that includes CouchView::Map:
+      """
+        class Map
+          include CouchView::Map
+        end
+      """
+
+    When I execute:
+      """
+        Map.new.map
+      """
+
+    Then I should get:
       """
         function(doc){
-          emit(doc.id, null)
+          emit(doc._id, null)
         }
       """
   
   Scenario: Instantiating a default map with a model
-    Given a CouchRest::Model::Base model MyModel
-    Given an empty class Map that includes CouchView::Map
-    When I execute "Map.new(MyModel).map"
-    Then I should get
+    Given an Article model
+
+    And an empty class Map that includes CouchView::Map:
+      """
+        class Map
+          include CouchView::Map
+        end
+      """
+
+    When I execute: 
+      """
+        Map.new(Article).map
+      """
+
+    Then I should get:
       """
         function(doc){
-          if (doc['couchrest-type'] == 'MyModel')
-            emit(doc.id, null)
+          if (doc['couchrest-type'] == 'Article')
+            emit(doc._id, null)
         }
       """ 
