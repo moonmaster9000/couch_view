@@ -3,7 +3,7 @@ Gem::Specification.new do |s|
   s.version     = File.read "VERSION"
   s.authors     = "Matt Parker"
   s.summary     = "Powerful views for CouchRest::Model::Base"
-  s.files       = Dir["lib/**/*"]
+  s.files       = Dir["lib/**/*"] << "readme.markdown"
   s.test_files  = Dir["features/**/*"]
 
   s.add_dependency "couchrest_model", "~> 1.0.0"
