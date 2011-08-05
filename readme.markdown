@@ -174,3 +174,25 @@ You can add any arbitrary reduce onto your `map` by simply specifying a `:reduce
 And now you can call it by call it with:
     
     Article.reduce_by_label.get!
+
+
+## Custom Names
+
+You find yourself needing to run more than one reduce on the same map. In that case, you'll have to supply the maps with unique names:
+
+    class Article < CouchRest::Model::Base
+      include CouchMap
+
+      map :by_label,              ByLabel, Visible, :reduce => "_count"
+      map :by_label_with_doubler, ByLabel, Visible, :reduce => 
+        "
+          function(key, values){
+            return sum(values) * 2
+          end
+        "
+    end
+
+You can now call these reduce methods thusly:
+
+    Article.reduce_by_label!
+    Article.reduce_by_label_with_doubler!

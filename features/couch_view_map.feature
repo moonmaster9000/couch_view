@@ -4,43 +4,48 @@ Feature: CouchView::Map
   So that I can create a class with a CouchDB map function
 
 
-  Scenario: Default map
-    Given an empty class Map that includes CouchView::Map:
+  Scenario: Mixing CouchView::Map into a class should generate a map over ids
+
+    Given the following class definition:
       """
         class Map
           include CouchView::Map
         end
       """
 
-    When I execute:
+    When I instantiate a new Map:
       """
         Map.new.map
       """
 
-    Then I should get:
+    Then I should receive the following CouchDB javascript map:
       """
         function(doc){
           emit(doc._id, null)
         }
       """
-  
 
-  Scenario: Instantiating a default map with a model
-    Given an Article model
+  Scenario: Instantiating a Map with a Model should generate a map over that model
 
-    And an empty class Map that includes CouchView::Map:
+    Given the following model definition:
+      """
+        class Article < CouchRest::Model::Base
+        end
+      """
+
+    And the following map definition:
       """
         class Map
           include CouchView::Map
         end
       """
 
-    When I execute: 
+    When I instantiate a new Map with Article: 
       """
         Map.new(Article).map
       """
 
-    Then I should get:
+    Then I should receive a map over the Article documents:
       """
         function(doc){
           if (doc['couchrest-type'] == 'Article')
@@ -48,9 +53,10 @@ Feature: CouchView::Map
         }
       """ 
 
-  Scenario: Creating a custom map
 
-    Given a ByLabel model in which I define my own map:
+  Scenario: Defining a custom map 
+
+    Given the the following custom map:
       """
         class ByLabel
           include CouchView::Map
@@ -66,15 +72,46 @@ Feature: CouchView::Map
         end
       """
 
-    When I execute:
+    When I instantiate a new ByLabel map:
       """
         ByLabel.new.map
       """
 
-    Then I should get:
+    Then I should receive a CouchDB javascript map over the labels:
       """
         function(doc){
           if (true)
             emit(doc.label, null)
+        }
+      """
+
+
+  Scenario: Decorating a map with conditions
+    Given the following map definition:
+      """
+        class ById
+          include CouchView::Map
+        end
+      """
+
+    And the following module:
+      """
+        module Published
+          def conditions
+            "#{super} && doc.published"
+          end
+        end
+      """
+
+    When I instantiate my map, extend it with my module, and call map:
+      """
+        ById.new.extend(Published).map
+      """
+
+    Then I should receive a CouchDB javascript map function over the published documents:
+      """
+        function(doc){
+          if (true && doc.published)
+            emit(doc._id, null)
         }
       """
