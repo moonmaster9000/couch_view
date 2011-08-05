@@ -66,3 +66,33 @@ Feature: CouchView::Map::Proxy
       """
         @proxy._options.should == {}
       """
+
+
+  Scenario: Destructively modifying the existring query by adding a query option with an exclamation point at the end
+
+    Given an Article model with a view "by_id":
+      """
+        class Article < CouchRest::Model::Base
+          view_by :id
+        end
+      """
+
+    When I instantiate a new CouchView::Map::Proxy with "Article" and ":by_id":
+      """
+        @proxy = CouchView::Map::Proxy.new Article, :by_id
+      """
+
+    And I destructively limit the results to 10:
+      """
+        @new_proxy = @proxy.limit! 10
+      """
+
+    Then @new_proxy should not be a new proxy object:
+      """
+        @new_proxy.object_id.should == @proxy.object_id
+      """
+
+    And the "_options" method on the new proxy should return a limit of 10:
+      """
+        @proxy._options.should == {"limit" => 10} 
+      """
