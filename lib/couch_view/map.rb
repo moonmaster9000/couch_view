@@ -7,7 +7,7 @@ module CouchView
     end
 
     def map
-      if conditions
+      if conditions != "true"
         "
           function(doc){
             if (#{conditions})
@@ -24,7 +24,11 @@ module CouchView
     end
 
     def conditions
-      "doc['couchrest-type'] == '#{@model}'" if @model
+      if @model
+        "doc['couchrest-type'] == '#{@model}'" 
+      else
+        "true"
+      end
     end
   end
 end
