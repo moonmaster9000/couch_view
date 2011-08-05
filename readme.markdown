@@ -123,8 +123,8 @@ When called without any conditions, these methods did the exact same thing they 
 
 However, it also opened up the possibility to use the `visible` and `visible!` conditions on these queries:
     
-    Article.map_by_label.filter_by(:visible).get!
-    Article.count_by_label.filter_by(:visible).get!
+    Article.map_by_label.visible.get!
+    Article.count_by_label.visible.get!
 
 These queries map (or count) over the visible `Article` documents in your database.
 
@@ -145,13 +145,13 @@ If you add more condition modules onto the `map`, then you'll simply get more co
       map_and_count ByLabel, Visible, Published
     end
 
-    Article.map_by_label.filter_by(:visible)
+    Article.map_by_label.visible
       #==> all visible Article documents in the database
     
-    Article.map_by_label.filter_by(:published)
+    Article.map_by_label.published
       #==> all published Article documents in the database
     
-    Article.map_by_label.filter_by(:published).filter(:visible)
+    Article.map_by_label.published.visible
       #==> all published, visible documents in the database
 
 
