@@ -14,7 +14,9 @@ This gem integrates with the `couchrest_model` gem (version ~> 1.0.0)
 
 Install it as a gem:
 
+```sh
     $ gem install couch_map
+```
 
 ## Your first view
 
