@@ -68,7 +68,7 @@ If you'd like to also count by label, you could use the `map_and_count` method i
     end
 ```
 
-By using the `count` method on our model, we now have the following methods:
+By using the `map_and_count` method on our model, we now have the following methods:
 
 ```ruby
     Article.map_by_label   #==> return all documents in order of label
