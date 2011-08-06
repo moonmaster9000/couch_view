@@ -80,7 +80,7 @@ These methods return a proxy for your query. You can continue to add CouchDB vie
 ```ruby
     query = Article.map_by_label
     query = query.startkey("a").endkey("b")
-```ruby
+```
 
 Each time you add a condition to your query, you will get a new query returned. If you'd rather update your existing query, you can append your condition with a "!":
 
@@ -89,7 +89,7 @@ Each time you add a condition to your query, you will get a new query returned. 
     query.startkey!("a").endkey!("b")
 
     # query at this point includes the conditions :startkey => 'a', :endkey => 'b'
-```ruby
+```
 
 Your query will execute when you call `each` or `get!` on it:  
 
@@ -101,7 +101,7 @@ Your query will execute when you call `each` or `get!` on it:
     # or...
 
     articles = Article.map_by_label.startkey!("a").endkey!("b").get!
-```ruby
+```
 
 
 You can also make your `map_by_label` and `count_by_label` return immediately by adding an `!` onto the end:
