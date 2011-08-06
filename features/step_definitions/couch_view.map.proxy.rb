@@ -10,6 +10,6 @@ When /^I call the .*/ do |code|
   eval code
 end
 
-Then /^@new_proxy should (?:not )?be a new proxy object:$/ do |code|
+Then /^@new_proxy should (?:not )?be a new object:$/ do |code|
   eval code
 end

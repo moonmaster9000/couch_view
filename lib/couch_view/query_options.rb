@@ -11,7 +11,7 @@ module CouchView
       option_name = option_name.to_s
 
       if is_exclamatory? option_name 
-        @options[option_name.to_s[0...-1]] = args.first
+        @options[option_name[0...-1]] = args.first
         @view_proxy
       else
         new_proxy                = @view_proxy.dup

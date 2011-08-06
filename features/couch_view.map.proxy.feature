@@ -108,17 +108,17 @@ Feature: CouchView::Map::Proxy
         @new_proxy = @proxy.limit 10
       """
 
-    Then @new_proxy should be a new proxy object:
+    Then @new_proxy should be a new object:
       """
         @new_proxy.object_id.should_not == @proxy.object_id
       """
 
-    And the "_options" method on the new proxy should return a limit of 10:
+    And the "_options" method on @new_proxy should return a limit of 10:
       """
         @new_proxy._options.should == {"limit" => 10} 
       """
 
-    And the "_options" method on the old proxy should return an empty hash:
+    And the "_options" method on the @proxy should return an empty hash:
       """
         @proxy._options.should == {}
       """
@@ -143,7 +143,7 @@ Feature: CouchView::Map::Proxy
         @new_proxy = @proxy.limit! 10
       """
 
-    Then @new_proxy should not be a new proxy object:
+    Then @new_proxy should not be a new object:
       """
         @new_proxy.object_id.should == @proxy.object_id
       """
@@ -168,7 +168,7 @@ Feature: CouchView::Map::Proxy
         @proxy = CouchView::Map::Proxy.new Article, :by_id
       """
 
-    And I call the published! method on the proxy
+    And I call the published! method on the proxy:
       """
         @proxy.published!
       """
@@ -176,4 +176,24 @@ Feature: CouchView::Map::Proxy
     Then the "_map" method should return ":by_id_published":
       """
         @proxy._map.should == :by_id_published
+      """
+
+    When I call the active! method on the proxy:
+      """
+        @proxy.active!
+      """
+
+    Then the "_map" method should return ":by_id_active_published":
+      """
+        @proxy._map.should == :by_id_active_published
+      """
+
+    When I call the visible! method on the proxy:
+      """
+        @proxy.visible!
+      """
+
+    Then the "_map" method should return ":by_id_active_published_visible": 
+      """
+        @proxy._map.should == :by_id_active_published_visible
       """
