@@ -2,7 +2,8 @@ Feature: CouchView
   As a programmer
   I want a `CouchView` mixin for my `CouchRest::Model::Base` models
   So that I can define maps and reduces on my model 
-
+  
+  @db
   Scenario: Define a map on your model with the `map` class method
     Given the following map definition:
       """

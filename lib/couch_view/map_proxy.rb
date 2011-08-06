@@ -18,7 +18,6 @@ module CouchView
         :descending,     :descending!,
         :group,          :group!,
         :group_level,    :group_level!,
-        :reduce,         :reduce!,
         :include_docs,   :include_docs!,
         :update_seq,     :update_seq!
         
@@ -26,7 +25,7 @@ module CouchView
         @_model         = model
         @_map           = map
         @_conditions    = []
-        @_query_options = CouchView::QueryOptions.new self
+        @_query_options = CouchView::QueryOptions.new self, "reduce" => false
       end
 
       def _options
@@ -34,9 +33,9 @@ module CouchView
       end
 
       def _map
-        map_name = [@_map.to_s, @_conditions.sort.join("_")]
-        map_name.reject! &:blank?
-        map_name.join("_").to_sym
+        map = [@_map.to_s, @_conditions.sort.join("_")]
+        map.reject! &:blank?
+        map.join("_").to_sym
       end
 
       def _query_options
@@ -47,6 +46,14 @@ module CouchView
         condition = remove_exclamation(condition)
         @_conditions << condition
         self
+      end
+
+      def each(&block)
+        _model.send(_map, _options).each &block
+      end
+
+      def get!
+        _model.send _map, _options
       end
 
       private

@@ -83,9 +83,9 @@ Feature: CouchView::Map::Proxy
         @proxy._model.should == Article
       """
 
-    And the "_options" method should return an empty hash:
+    And the "_options" method should return the default map option of `"reduce" => false`:
       """
-        @proxy._options.should == {}
+        @proxy._options.should == {"reduce" => false}
       """
 
 
@@ -115,12 +115,12 @@ Feature: CouchView::Map::Proxy
 
     And the "_options" method on @new_proxy should return a limit of 10:
       """
-        @new_proxy._options.should == {"limit" => 10} 
+        @new_proxy._options.should == {"reduce" => false, "limit" => 10} 
       """
 
-    And the "_options" method on the @proxy should return an empty hash:
+    And the "_options" method on the @proxy should return the default map option of `"reduce" => false`:
       """
-        @proxy._options.should == {}
+        @proxy._options.should == {"reduce" => false}
       """
 
 
@@ -150,11 +150,11 @@ Feature: CouchView::Map::Proxy
 
     And the "_options" method on the new proxy should return a limit of 10:
       """
-        @proxy._options.should == {"limit" => 10} 
+        @proxy._options.should == {"reduce" => false, "limit" => 10} 
       """
 
 
-  Scenario: Modifying the map to call
+  Scenario: The map name should include alpha-sorted conditions
 
     Given an Article model with a view "by_id":
       """
@@ -196,4 +196,41 @@ Feature: CouchView::Map::Proxy
     Then the "_map" method should return ":by_id_active_published_visible": 
       """
         @proxy._map.should == :by_id_active_published_visible
+      """
+  
+  @db
+  Scenario: Executing the call with "get!" or "each!"
+    
+    Given an Article model with a view "by_id":
+      """
+        class Article < CouchRest::Model::Base
+          view_by :id
+        end
+      """
+
+    When I instantiate a new CouchView::Map::Proxy with "Article" and ":by_id":
+      """
+        @proxy = CouchView::Map::Proxy.new Article, :by_id
+      """
+
+    And I call the "get!" method on the proxy
+      """
+        @call = proc { @proxy.get! }
+      """
+
+    Then the proxy should call the ":by_id" method on the Article model:
+      """
+        Article.should_receive(:by_id)
+        @call.call
+      """
+
+    When I call the "each" method on the proxy
+      """
+        Article.should_receive(:by_id).and_return ["result"]
+        @call = proc { @proxy.each {|a| a.should == "result"} }
+      """
+
+    Then the proxy should call the ":by_id" method on the Article model: 
+      """
+        @call.call
       """
