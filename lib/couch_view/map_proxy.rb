@@ -3,7 +3,7 @@ module CouchView
     class Proxy
       extend Forwardable
       
-      attr_reader :_model, :_map
+      attr_reader :_model, :_map, :_query_options
       attr_writer :_query_options
       
       # Supported CouchDB Query Options
@@ -36,10 +36,6 @@ module CouchView
         map = [@_map.to_s, @_conditions.sort.join("_")]
         map.reject! &:blank?
         map.join("_").to_sym
-      end
-
-      def _query_options
-        @_query_options
       end
 
       def method_missing(condition, *args, &block)
