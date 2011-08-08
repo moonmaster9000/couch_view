@@ -234,31 +234,3 @@ Feature: CouchView::Proxy
       """
         @call.call
       """
-
-
-  Scenario: You are now allowed to call :reduce on a map proxy
-    
-    Given an Article model with a view "by_id":
-      """
-        class Article < CouchRest::Model::Base
-          view_by :id
-        end
-      """
-
-    When I instantiate a new CouchView::Proxy with "Article" and ":by_id":
-      """
-        @proxy = CouchView::Proxy.new Article, :by_id
-      """
-
-    Then I should not be able to call the :reduce method on my proxy
-      """
-        proc { @proxy.reduce }.should raise_error("You are not allowed to reduce a map proxy.")
-      """
-    
-    And I should not be able to call the "reduce!" method on my proxy
-      """
-        proc { @proxy.reduce! }.should raise_error("You are not allowed to reduce a map proxy.")
-      """
-
-
-
