@@ -25,7 +25,7 @@ module CouchView
         @_model         = model
         @_map           = map
         @_conditions    = []
-        @_query_options = CouchView::QueryOptions.new self, "reduce" => false
+        @_query_options = default_query_options
       end
 
       def _options
@@ -56,11 +56,14 @@ module CouchView
         disallow_reduce
       end
 
-      def reduce!
-        disallow_reduce
-      end
+      alias :reduce! :reduce
+
 
       private
+      def default_query_options
+        CouchView::QueryOptions.new self, "reduce" => false
+      end
+
       def disallow_reduce
         raise "You are not allowed to reduce a map proxy."
       end

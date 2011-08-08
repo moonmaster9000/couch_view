@@ -254,3 +254,11 @@ Feature: CouchView::Map::Proxy
       """
         proc { @proxy.reduce }.should raise_error("You are not allowed to reduce a map proxy.")
       """
+    
+    And I should not be able to call the "reduce!" method on my proxy
+      """
+        proc { @proxy.reduce! }.should raise_error("You are not allowed to reduce a map proxy.")
+      """
+
+
+

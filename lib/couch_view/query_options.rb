@@ -8,17 +8,7 @@ module CouchView
     end
     
     def method_missing(option_name, *args, &block)
-      option_name = option_name.to_s
-
-      if is_exclamatory? option_name 
-        @options[option_name[0...-1]] = args.first
-        @view_proxy
-      else
-        new_proxy                = @view_proxy.dup
-        new_options              = @options.dup.merge option_name => args.first
-        new_proxy._query_options = CouchView::QueryOptions.new new_proxy, new_options
-        new_proxy
-      end
+      set_query_option option_name.to_s, args.first
     end
 
     def to_hash
@@ -28,6 +18,26 @@ module CouchView
     private
     def is_exclamatory?(option_name="")
       option_name.to_s[-1..-1] == "!"
+    end
+
+    def set_query_option(option_name, option_value)
+      if is_exclamatory? option_name 
+        destructively_update_option option_name, option_value
+      else
+        update_option_and_return_new_proxy option_name, option_value
+      end
+    end
+
+    def destructively_update_option(option_name, option_value)
+      @options[option_name[0...-1]] = option_value
+      @view_proxy
+    end
+
+    def update_option_and_return_new_proxy(option_name, option_value)
+      new_proxy                = @view_proxy.dup
+      new_options              = @options.dup.merge option_name => option_value
+      new_proxy._query_options = CouchView::QueryOptions.new new_proxy, new_options
+      new_proxy
     end
   end
 end
