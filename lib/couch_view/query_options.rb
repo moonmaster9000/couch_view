@@ -29,13 +29,13 @@ module CouchView
     end
 
     def destructively_update_option(option_name, option_value)
-      @options[option_name[0...-1]] = option_value
+      @options[option_name[0...-1].to_sym] = option_value
       @view_proxy
     end
 
     def update_option_and_return_new_proxy(option_name, option_value)
       new_proxy                = @view_proxy.dup
-      new_options              = @options.dup.merge option_name => option_value
+      new_options              = @options.dup.merge option_name.to_sym => option_value
       new_proxy._query_options = CouchView::QueryOptions.new new_proxy, new_options
       new_proxy
     end

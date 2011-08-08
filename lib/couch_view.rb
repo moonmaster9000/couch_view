@@ -1,5 +1,6 @@
 require 'couchrest_model'
 require 'couch_view/map'
 require 'couch_view/couch_view'
-require 'couch_view/map_proxy'
+require 'couch_view/proxy'
+require 'couch_view/count_proxy'
 require 'couch_view/query_options'

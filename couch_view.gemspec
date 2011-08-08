@@ -6,6 +6,7 @@ Gem::Specification.new do |s|
   s.files       = Dir["lib/**/*"] << "readme.markdown"
   s.test_files  = Dir["features/**/*"]
 
+  s.add_dependency "couchrest", "1.0.1"
   s.add_dependency "couchrest_model", "~> 1.0.0"
   s.add_development_dependency "cucumber"
   s.add_development_dependency "rspec"

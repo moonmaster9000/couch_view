@@ -17,3 +17,15 @@ end
 Then /^my proxy should map .*$/ do |code|
   eval code
 end
+
+Then /^I should receive a.*proxy:$/ do |code|
+  eval code
+end
+
+When /^I create.*articles:$/ do |code|
+  eval code
+end
+
+Then /^`count_by_id!` should return .*:$/ do |code|
+  eval code
+end

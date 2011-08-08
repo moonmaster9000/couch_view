@@ -1,13 +1,13 @@
-Feature: CouchView::Map::Proxy
+Feature: CouchView::Proxy
 
   A proxy object that lets you lazily build CouchDB map queries.
 
 
   h2. Creating a map proxy
 
-  To create a new map proxy, simply instantiate `CouchView::Map::Proxy` with the model to call on, and the map to call:
+  To create a new map proxy, simply instantiate `CouchView::Proxy` with the model to call on, and the map to call:
       
-      proxy = CouchView::Map::Proxy.new Article, :by_id
+      proxy = CouchView::Proxy.new Article, :by_id
 
 
   h2. Adding CouchDB query parameters to the proxy
@@ -31,7 +31,7 @@ Feature: CouchView::Map::Proxy
 
   For example, suppose our `Article` model responded to `by_label` and `by_label_published`:
 
-      proxy = CouchView::Map::Proxy.new Article, :by_label
+      proxy = CouchView::Proxy.new Article, :by_label
 
       proxy._map #==> :by_label
 
@@ -41,7 +41,7 @@ Feature: CouchView::Map::Proxy
 
   If you call several methods on your proxy that don't correspond to CouchDB query parameters, then the proxy will alpha-sort them to generate the view name to call:
 
-      proxy = CouchView::Map::Proxy.new Article, :by_label
+      proxy = CouchView::Proxy.new Article, :by_label
 
       proxy.published!.visible!.active!
 
@@ -52,7 +52,7 @@ Feature: CouchView::Map::Proxy
 
   You can trigger a call on a map proxy by calling either the `.each` method or the `get!` method:
 
-      proxy = CouchView::Map::Proxy.new Article, :by_label
+      proxy = CouchView::Proxy.new Article, :by_label
       
       proxy.each {...} #==> executes "Article.by_label"
       proxy.get!       #==> executes "Article.by_label"
@@ -68,9 +68,9 @@ Feature: CouchView::Map::Proxy
         end
       """
 
-    When I instantiate a new CouchView::Map::Proxy with "Article" and ":by_id":
+    When I instantiate a new CouchView::Proxy with "Article" and ":by_id":
       """
-        @proxy = CouchView::Map::Proxy.new Article, :by_id
+        @proxy = CouchView::Proxy.new Article, :by_id
       """
 
     Then the "_map" method should return ":by_id":
@@ -83,9 +83,9 @@ Feature: CouchView::Map::Proxy
         @proxy._model.should == Article
       """
 
-    And the "_options" method should return the default map option of `"reduce" => false`:
+    And the "_options" method should return the default map option of `:reduce => false`:
       """
-        @proxy._options.should == {"reduce" => false}
+        @proxy._options.should == {:reduce => false}
       """
 
 
@@ -98,9 +98,9 @@ Feature: CouchView::Map::Proxy
         end
       """
 
-    When I instantiate a new CouchView::Map::Proxy with "Article" and ":by_id":
+    When I instantiate a new CouchView::Proxy with "Article" and ":by_id":
       """
-        @proxy = CouchView::Map::Proxy.new Article, :by_id
+        @proxy = CouchView::Proxy.new Article, :by_id
       """
 
     And I limit the results to 10:
@@ -115,12 +115,12 @@ Feature: CouchView::Map::Proxy
 
     And the "_options" method on @new_proxy should return a limit of 10:
       """
-        @new_proxy._options.should == {"reduce" => false, "limit" => 10} 
+        @new_proxy._options.should == {:reduce => false, :limit => 10} 
       """
 
-    And the "_options" method on the @proxy should return the default map option of `"reduce" => false`:
+    And the "_options" method on the @proxy should return the default map option of `:reduce => false`:
       """
-        @proxy._options.should == {"reduce" => false}
+        @proxy._options.should == {:reduce => false}
       """
 
 
@@ -133,9 +133,9 @@ Feature: CouchView::Map::Proxy
         end
       """
 
-    When I instantiate a new CouchView::Map::Proxy with "Article" and ":by_id":
+    When I instantiate a new CouchView::Proxy with "Article" and ":by_id":
       """
-        @proxy = CouchView::Map::Proxy.new Article, :by_id
+        @proxy = CouchView::Proxy.new Article, :by_id
       """
 
     And I destructively limit the results to 10:
@@ -150,7 +150,7 @@ Feature: CouchView::Map::Proxy
 
     And the "_options" method on the new proxy should return a limit of 10:
       """
-        @proxy._options.should == {"reduce" => false, "limit" => 10} 
+        @proxy._options.should == {:reduce => false, :limit => 10} 
       """
 
 
@@ -163,9 +163,9 @@ Feature: CouchView::Map::Proxy
         end
       """
 
-    When I instantiate a new CouchView::Map::Proxy with "Article" and ":by_id":
+    When I instantiate a new CouchView::Proxy with "Article" and ":by_id":
       """
-        @proxy = CouchView::Map::Proxy.new Article, :by_id
+        @proxy = CouchView::Proxy.new Article, :by_id
       """
 
     And I call the published! method on the proxy:
@@ -208,9 +208,9 @@ Feature: CouchView::Map::Proxy
         end
       """
 
-    When I instantiate a new CouchView::Map::Proxy with "Article" and ":by_id":
+    When I instantiate a new CouchView::Proxy with "Article" and ":by_id":
       """
-        @proxy = CouchView::Map::Proxy.new Article, :by_id
+        @proxy = CouchView::Proxy.new Article, :by_id
       """
 
     And I call the "get!" method on the proxy
@@ -236,7 +236,7 @@ Feature: CouchView::Map::Proxy
       """
 
 
-  Scenario: You are now allowed to call "reduce" on a map proxy
+  Scenario: You are now allowed to call :reduce on a map proxy
     
     Given an Article model with a view "by_id":
       """
@@ -245,12 +245,12 @@ Feature: CouchView::Map::Proxy
         end
       """
 
-    When I instantiate a new CouchView::Map::Proxy with "Article" and ":by_id":
+    When I instantiate a new CouchView::Proxy with "Article" and ":by_id":
       """
-        @proxy = CouchView::Map::Proxy.new Article, :by_id
+        @proxy = CouchView::Proxy.new Article, :by_id
       """
 
-    Then I should not be able to call the "reduce" method on my proxy
+    Then I should not be able to call the :reduce method on my proxy
       """
         proc { @proxy.reduce }.should raise_error("You are not allowed to reduce a map proxy.")
       """

@@ -37,7 +37,7 @@ Let's imagine that we want to create a map on our model that includes all of the
     end
 ```
 
-Note that instead of specifying the conditions for inclusion in our map, we instead called the `conditions` instance method. This is a method mixed into your class via `CouchView::Map`.
+Note that instead of specifying the conditions for inclusion in our map, we called the `conditions` instance method. This is a method mixed into your class via `CouchView::Map`.
 
 Now, you can use this in your `CouchRest::Model::Base` class thusly: 
 
@@ -58,21 +58,11 @@ This will generate a map `by_label` on `Article` that looks like this:
     }
 ```
 
-If you'd like to also count by label, you could use the `map_and_count` method instead:
+By default, `CouchView` also generated a reduce function for this view that will count the view results. To call it, simply call `count_by_label` instead of `map_by_label`. You can pass all of the usual CouchDB query string parameters to it.
 
 ```ruby
-    class Article < CouchRest::Model::Base
-      include CouchMap
-
-      map_and_count ByLabel
-    end
-```
-
-By using the `map_and_count` method on our model, we now have the following methods:
-
-```ruby
-    Article.map_by_label   #==> return all documents in order of label
-    Article.count_by_label #==> return the count of all documents in the "by_label" map
+    Article.map_by_label   #==> return a proxy for all documents in order of label
+    Article.count_by_label #==> return a proxy for the count of all documents in the "by_label" view
 ```
 
 These methods return a proxy for your query. You can continue to add CouchDB view conditions to your query:

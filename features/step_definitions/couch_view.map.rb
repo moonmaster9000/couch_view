@@ -14,6 +14,6 @@ Then /^I should receive a map proxy:$/ do |code|
   eval code
 end
 
-Then /^I should receive the following.*$/ do |response|
+Then /^I should receive (?:a CouchDB|the following).*$/ do |response|
   @response.strip.gsub(/\n[\ ]*/, "").should == response.strip.gsub(/\n[\ ]*/, "")
 end

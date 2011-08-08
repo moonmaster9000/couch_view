@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     couch_view (0.0.1)
+      couchrest (= 1.0.1)
       couchrest_model (~> 1.0.0)
 
 GEM
@@ -24,10 +25,10 @@ GEM
       i18n (~> 0.5.0)
     activesupport (3.0.9)
     builder (2.1.2)
-    couchrest (1.0.2)
-      json (~> 1.5.1)
-      mime-types (~> 1.15)
-      rest-client (~> 1.6.1)
+    couchrest (1.0.1)
+      json (>= 1.4.6)
+      mime-types (>= 1.15)
+      rest-client (>= 1.5.1)
     couchrest_model (1.0.0)
       activemodel (~> 3.0.0)
       couchrest (~> 1.0.1)
@@ -46,7 +47,7 @@ GEM
     diff-lcs (1.1.2)
     erubis (2.6.6)
       abstract (>= 1.0.0)
-    gherkin (2.4.5)
+    gherkin (2.4.6)
       json (>= 1.4.6)
     i18n (0.5.0)
     json (1.5.3)
