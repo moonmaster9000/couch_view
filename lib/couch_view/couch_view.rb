@@ -15,6 +15,7 @@ module CouchView
         end
 
         def map_#{map_method_name}
+          CouchView::Map::Proxy.new self, :by_#{map_method_name}
         end
       METHOD
     end

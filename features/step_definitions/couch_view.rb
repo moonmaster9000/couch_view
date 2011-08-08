@@ -10,6 +10,10 @@ When /^I create an Article:$/ do |code|
   eval code
 end
 
-Then /^`map_by_id!` should return the article$/ do |code|
+Then /^`.*` should return the article$/ do |code|
+  eval code
+end
+
+Then /^my proxy should map .*$/ do |code|
   eval code
 end

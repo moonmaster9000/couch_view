@@ -45,7 +45,7 @@ Feature: CouchView::Map
         Map.new(Article).map
       """
 
-    Then I should receive a map over the Article documents:
+    Then I should receive the following map over the Article documents:
       """
         function(doc){
           if (doc['couchrest-type'] == 'Article')

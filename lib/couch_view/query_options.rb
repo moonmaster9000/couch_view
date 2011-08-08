@@ -16,12 +16,12 @@ module CouchView
     end
     
     private
-    def is_exclamatory?(option_name="")
+    def ends_in_exclamation?(option_name="")
       option_name.to_s[-1..-1] == "!"
     end
 
     def set_query_option(option_name, option_value)
-      if is_exclamatory? option_name 
+      if ends_in_exclamation? option_name 
         destructively_update_option option_name, option_value
       else
         update_option_and_return_new_proxy option_name, option_value

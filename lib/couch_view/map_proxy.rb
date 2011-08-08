@@ -3,8 +3,8 @@ module CouchView
     class Proxy
       extend Forwardable
       
-      attr_reader :_model, :_map, :_query_options
-      attr_writer :_query_options
+      attr_reader   :_model, :_map
+      attr_accessor :_query_options
       
       # Supported CouchDB Query Options
       def_delegators :@_query_options, 
