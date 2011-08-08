@@ -199,7 +199,7 @@ Feature: CouchView::Map::Proxy
       """
   
   @db
-  Scenario: Executing the call with "get!" or "each!"
+  Scenario: Executing the proxy with "get!" or "each!"
     
     Given an Article model with a view "by_id":
       """
@@ -233,4 +233,24 @@ Feature: CouchView::Map::Proxy
     Then the proxy should call the ":by_id" method on the Article model: 
       """
         @call.call
+      """
+
+
+  Scenario: You are now allowed to call "reduce" on a map proxy
+    
+    Given an Article model with a view "by_id":
+      """
+        class Article < CouchRest::Model::Base
+          view_by :id
+        end
+      """
+
+    When I instantiate a new CouchView::Map::Proxy with "Article" and ":by_id":
+      """
+        @proxy = CouchView::Map::Proxy.new Article, :by_id
+      """
+
+    Then I should not be able to call the "reduce" method on my proxy
+      """
+        proc { @proxy.reduce }.should raise_error("You are not allowed to reduce a map proxy.")
       """

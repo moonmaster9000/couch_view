@@ -52,7 +52,19 @@ module CouchView
         _model.send _map, _options
       end
 
+      def reduce
+        disallow_reduce
+      end
+
+      def reduce!
+        disallow_reduce
+      end
+
       private
+      def disallow_reduce
+        raise "You are not allowed to reduce a map proxy."
+      end
+
       def remove_exclamation(condition)
         condition = condition.to_s
 
