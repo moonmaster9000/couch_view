@@ -4,7 +4,7 @@ A decorator library for generating CouchDB view (map/reduce) functions for Couch
 
 ## Why?
 
-CouchView makes your `CouchRest::Model::Base` views modular, and also makes it easier to unit test them.
+CouchView makes your views modular, decouples them from your model, and also makes it easier to unit test them.
 
 ## Requirements?
 
@@ -15,70 +15,221 @@ This gem integrates with the `couchrest_model` gem (version ~> 1.0.0)
 Install it as a gem:
 
 ```sh
-    $ gem install couch_map
+    $ gem install couch_view
 ```
 
 ## Your first view
 
 Let's imagine that we want to create a map on our model that includes all of the document labels (human-readable ids):
 
-```ruby
-    class ByLabel
-      include CouchView::Map
-      
-      def map
-        "
-          function(doc){
-            if (#{conditions})
-              emit(doc.label, null)
-          }
-        "
-      end
-    end
-```
-
-Note that instead of specifying the conditions for inclusion in our map, we called the `conditions` instance method. This is a method mixed into your class via `CouchView::Map`.
-
-Now, you can use this in your `CouchRest::Model::Base` class thusly: 
+We can start by simply calling the "map" method on our model, passing in the :label property:
 
 ```ruby
     class Article < CouchRest::Model::Base
-      include CouchMap
+      include CouchView
+      
+      property :label
 
-      map ByLabel
+      map :label
     end
 ```
 
-This will generate a map `by_label` on `Article` that looks like this:
+This will generate a javascript map function that looks like this:
 
 ```javascript
     function(doc){
       if (doc['couchrest-type'] == 'Article')
-        emit(doc.label, null) 
+        emit(doc.label, null)
     }
 ```
 
-By default, `CouchView` also generated a reduce function for this view that will count the view results. To call it, simply call `count_by_label` instead of `map_by_label`. You can pass all of the usual CouchDB query string parameters to it.
+We can query this map by using the "map_by_label!" method:
 
 ```ruby
-    Article.map_by_label   #==> return a proxy for all documents in order of label
-    Article.count_by_label #==> return a proxy for the count of all documents in the "by_label" view
+    Article.map_by_label! #==> all of the articles, in order of label
 ```
 
-These methods return a proxy for your query. You can continue to add CouchDB view conditions to your query:
+You can use any of the standard CouchDB query options on this view; see the section "Query Proxy" for more information.
+
+We can also count all of the articles in the "by_label" map using the `count_by_label!` method:
+
+```ruby
+    Article.count_by_label! #==> 0, assuming we haven't created any articles
+```
+
+Next, let's imagine that we'd like to create a view with a compound key: let's index all of the articles in the system by author and created_at:
+
+```ruby
+    class Article < CouchRest::Model::Base
+      include CouchView
+      property :author
+      timestamps!
+
+      map :author, :created_at
+    end
+```
+
+And it's as simple as that. `CouchView` generated the following javascript map function:
+
+```javascript
+    function(doc){
+      if (doc['couchrest-type'] == 'Article')
+        emit([doc.author, doc.created_at], null)
+    }
+```
+
+We can now iterate over the map using the `map_by_author_and_created_at!` method, and we can count it using the `count_by_author_and_created_at!` method.
+
+## Complex views
+
+But what if you need to create a more complex view? `CouchView` is your friend here. Let's imagine that we want to index all of the articles by the number of comments they've received.
+
+We'll start by creating a map class:
+
+```ruby
+    class ByCommentCount
+      include CouchView::Map
+
+      def map
+        <<-JS
+          function(doc){
+            if (#{conditions})
+              emit(doc.comments.length, null)
+          }
+        JS
+      end
+    end
+```
+
+Notice that we call the "conditions" method inside of our map. This method is mixed into our class by the `CouchView::Map` module. You'll learn how this method allows us to decorate our views with conditions in the next section. For now, let's see what happens if we simply instantiate this class and call the "map" method on it:
+
+```ruby
+    ByCommentCount.new.map #==> 
+      "
+        function(doc){
+          if (true)
+            emit(doc.comments.length, null)
+        }
+      "
+```
+
+Well that's not very interesting... However, what if we use this map in a model?
+
+```ruby
+    class Article < CouchRest::Model::Base
+      include CouchView
+      property :comments, [String]
+      map ByCommentCount
+    end
+```
+
+Now, CouchView will generate a map function on our Article design document that will look like this:
+
+```javascript
+    function(doc){
+      if (doc['couchrest-type'] == 'Article')
+        emit(doc.comments.length, null)
+    }
+```
+
+Similar to before, we can query this index with `map_by_comment_count!` and `count_by_comment_count!`.
+
+
+## Decorating maps with conditions
+
+Next, let's imagine that sometimes we'd like to constrain our Article views to published articles, "web exclusive" articles, and a mixture of the two. Imagine our model was defined like this:
+
+To start, let's define the following condition modules:
+
+```ruby
+    module WebExclusive
+      def conditions
+        "#{super} && doc.web_exclusive == true"
+      end
+    end
+
+    module Published
+      def conditions
+        "#{super} && doc.published == true"
+      end
+    end
+```
+
+We can then add them into our map definitions thusly:
+
+```ruby
+    class Article < CouchRest::Model::Base
+      include CouchView
+
+      property :label
+      property :web_exclusive,  TrueClass, :default => false
+      property :published,      TrueClass, :default => false
+
+      map :label do
+        conditions WebExclusive, Published
+      end
+    end
+```
+
+Now, we can constrain our `map_by_label` query proxy to consider only web exlusive articles, published articles, or both:
+
+```ruby
+    Article.map_by_label.published.get!               
+      #==> published articles ordered by label
     
-```ruby
-    query = Article.map_by_label
-    query = query.startkey("a").endkey("b")
+    Article.map_by_label.web_exclusive.get!           
+      #==> web exclusive articles ordered by label
+    
+    Article.map_by_label.published.web_exclusive.get! 
+      #==> published, web exclusive articles ordered by label
 ```
 
-Each time you add a condition to your query, you will get a new query returned. If you'd rather update your existing query, you can append your condition with a "!":
 
-```ruby   
-    query = Article.map_by_label
-    query.startkey!("a").endkey!("b")
+## Query Proxy
 
-    # query at this point includes the conditions :startkey => 'a', :endkey => 'b'
+CouchView includes a simple query proxy system for building your map/reduce queries. 
+
+Given the following model:
+
+```ruby
+    class Article < CouchRest::Model::Base
+      include CouchView
+      map :label
+    end
+```
+
+When you call `map_by_label`, you'll recieve a proxy for the query you want to run:
+
+```ruby
+  proxy = Article.map_by_label
+```
+
+You can now begin modifying your proxy with the standard CouchDB query options. For example, suppose we'd like to limit our result to 10. We can call either the `limit` method, or the `limit!` method. The former will return a new proxy, and leave the original untouched. The latter will modify the proxy it was called on.
+
+```ruby
+  # generate a new proxy
+  new_proxy = proxy.limit 10
+
+  # or update the existing property
+  proxy.limit!(10)
+```
+
+Here's the full list of CouchDB query parameters that `CouchView` supports:
+
+```ruby
+    limit       
+    skip           
+    startkey       
+    endkey         
+    startkey_docid 
+    endkey_docid   
+    stale          
+    descending     
+    group          
+    group_level    
+    reduce         
+    include_docs   
+    update_seq     
 ```
 
 Your query will execute when you call `each` or `get!` on it:  
@@ -93,7 +244,6 @@ Your query will execute when you call `each` or `get!` on it:
     articles = Article.map_by_label.startkey!("a").endkey!("b").get!
 ```
 
-
 You can also make your `map_by_label` and `count_by_label` return immediately by adding an `!` onto the end:
 
 ```ruby
@@ -104,92 +254,23 @@ You can also make your `map_by_label` and `count_by_label` return immediately by
       #==> 5
 ```
 
-
-## Conditional Variations
-
-Now, let's suppose we'd like to extend our map with new conditions: we only include a document in the index if the "visible" property is true:
-
-```ruby
-    module Visible
-      def conditions
-        "#{super} && doc.visible == true"
-      end
-    end
-```
-
-We can now add this into our model thusly:
-
-```ruby
-    class Article < CouchRest::Model::Base
-      include CouchView
-
-      property :visible, TrueClass, :default => false
-      
-      map_and_count ByLabel, Visible
-    end
-```
-
-Just like before, this created the following methods on our model:
-   
-```ruby
-    Article.map_by_label
-    Article.count_by_label
-```
-
-When called without any conditions, these methods did the exact same thing they did before: mapped (or counted) all the `Article` documents in your database.
-
-However, it also opened up the possibility to use the `visible` and `visible!` conditions on these queries:
-   
-```ruby
-    Article.map_by_label.visible.get!
-    Article.count_by_label.visible.get!
-```
-
-These queries map (or count) over the visible `Article` documents in your database.
-
-If you add more condition modules onto the `map`, then you'll simply get more conditions to use on your map:
-
-```ruby
-    module Published
-      def conditions
-        "#{super} && doc.published == true"
-      end
-    end
-
-    class Article < CouchRest::Model::Base
-      include CouchView
-
-      property :visible,   TrueClass, :default => false
-      property :published, TrueClass, :default => false
-      
-      map_and_count ByLabel, Visible, Published
-    end
-
-    Article.map_by_label.visible
-      #==> all visible Article documents in the database
-    
-    Article.map_by_label.published
-      #==> all published Article documents in the database
-    
-    Article.map_by_label.published.visible
-      #==> all published, visible documents in the database
-```
-
 ## Arbitrary Reduce
 
-You can add any arbitrary reduce onto your `map` by simply specifying a `:reduce => "...."` method at the end of your `map`:
+You can add any arbitrary reduce onto your view by using the `reduce` class method on your model:
 
 ```ruby
     class Article < CouchRest::Model::Base
       include CouchMap
 
-      property :visible, TrueClass, :default => false
+      property :label
       
-      map ByLabel, Visible, :reduce => "
-        function(key, values){
-          return sum(values)
-        }
-      "
+      reduce :label do
+        function <<-JS
+          function(key, values){
+            return sum(values)
+          }
+        JS
+      end
     end
 ```
 
@@ -199,21 +280,30 @@ And now you can call it by call it with:
     Article.reduce_by_label.get!
 ```
 
+Note that you can still call `map_by_label` as well. You can't, however, call `count_by_label`.
+
+
 ## Custom Names
 
-You find yourself needing to run more than one reduce on the same map. In that case, you'll have to supply the maps with unique names:
+You find yourself needing to run more than one reduce on the same map. In that case, you'll have to supply the maps with unique names using the the `view` class method:
 
 ```ruby
     class Article < CouchRest::Model::Base
       include CouchMap
 
-      map ByLabel, Visible, :reduce => "_count"
-      map :by_label_with_doubler, ByLabel, Visible, :reduce => 
-        "
-          function(key, values){
-            return sum(values) * 2
-          end
-        "
+      reduce :label do
+        function "_count"
+      end
+      
+      view :by_label_with_doubler do
+        reduce :label do
+          function <<-JS
+            function(key, values){
+              return sum(values) * 2
+            }
+          JS
+        end
+      end
     end
 ```
 
@@ -221,5 +311,21 @@ You can now call these reduce methods thusly:
 
 ```ruby
     Article.reduce_by_label!
-    Article.reduce_by_label_with_doubler!
+    Article.reduce_double_by_label_with_doubler!
 ```
+
+Note that you can also still call `map_by_label` and `map_by_label_with_doubler` as well.
+
+Also note that you can use the `view` class method to name your maps as well:
+
+```ruby
+    class Article < CouchRest::Model::Base
+      include CouchMap
+      
+      view :by_human_readable_label do
+        map :label
+      end
+    end
+```
+
+In this example, you would now call `map_by_human_readable_label` or `count_by_human_readable_label` to query this view.
