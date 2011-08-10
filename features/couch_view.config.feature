@@ -17,7 +17,7 @@ Feature: CouchView::Config
   You could, alternatively, provide it with a model and a CouchView::Map class:
       
       class ById; include CouchView::Map; end
-      config = CouchView::Config.new :model => Article, :map => ById
+      config = CouchView::Config.new :model => Article, :map => [ById]
       config.view_names   #==> ["by_id"]
       config.model  #==> Article
 
@@ -102,4 +102,53 @@ Feature: CouchView::Config
       """
         @config.view_names.should == ["by_label_and_name"]
       """
+    
+    When I create a CouchView::Map `ById`:
+      """
+        class ById
+          include CouchView::Map
+        end
+      """
 
+    And I create a CouchView::Config to map over article documents `ById`:
+      """
+        @config = CouchView::Config.new :model => Article, :map => [ById]
+      """
+
+    Then the config should report "by_id" as a view name:
+      """
+        @config.view_names.should == ["by_id"]
+      """
+
+
+  @db
+  Scenario: Generating a name based on the properties passed in to map over
+    
+    Given the following model:
+      """
+        class Article < CouchRest::Model::Base
+          include CouchView
+          property :label
+          property :name
+        end
+      """
+
+    When I create a CouchView::Config to map over Article labels:
+      """
+        @config = CouchView::Config.new :model => Article, :map => [:label]
+      """
+
+    Then the config should default the "reduce" to "_count":
+      """
+        @config.reduce.should == "_count"
+      """
+
+    When I change the "reduce" to a javascript function:
+      """
+        @config.reduce "function(key, values){}"
+      """
+
+    Then the config should return that function for the "reduce":
+      """
+        @config.reduce.should == "function(key, values){}" 
+      """

@@ -7,6 +7,14 @@ module CouchView
       @map_class, @properties = extract_map_class_data options[:map]
     end
 
+    def reduce(function=nil)
+      if function
+        @reduce = function
+      else
+        @reduce ||= "_count"
+      end
+    end
+
     def view_names 
       if @properties.empty?
         base_name = @map_class.to_s.underscore
@@ -19,11 +27,11 @@ module CouchView
 
     private
     def extract_map_class_data(map)
-      if map.class == Symbol || map.kind_of?(Array)
+      if map.first.class == Symbol
         properties = [map].flatten
         return CouchView::Map::Property, properties 
       else
-        return map, []
+        return map.first, []
       end
     end
   end

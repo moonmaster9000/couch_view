@@ -1,3 +1,3 @@
-When /^I create a CouchView::Config to map over .*:$/ do |code|
+When /^I (?:create a |change the).*:$/ do |code|
   eval code
 end
