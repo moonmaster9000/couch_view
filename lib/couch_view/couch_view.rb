@@ -3,10 +3,16 @@ module CouchView
 
   module ClassMethods
     def map(*args)
-      map_class       = args.first
-      map_function    = map_class.new(self).map
-      map_method_name = map_class.to_s.underscore
+      map_over        = args
 
+      if map_over.first.kind_of?(Symbol)
+        map_function = CouchView::Map::Property.new(self, *map_over).map 
+      else
+        map_function = map_over.first.new(self).map
+      end
+
+      map_method_name = map_over.join("_").underscore
+      map_method_name = "by_" + map_method_name unless map_method_name[0..2] == "by_"
       view_by map_method_name, :map => map_function, :reduce => "_count"
 
       instance_eval <<-METHOD

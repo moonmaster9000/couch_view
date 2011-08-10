@@ -3,6 +3,40 @@ Feature: CouchView
   I want a `CouchView` mixin for my `CouchRest::Model::Base` models
   So that I can define maps and reduces on my model 
   
+  
+  @db @focus
+  Scenario: Define a map over a property
+    Given the following model definition:
+      """
+        class Article < CouchRest::Model::Base
+          include CouchView
+          property :label
+        end
+      """
+
+    When I pass :label to the `map` class method:
+      """
+        Article.map :label
+      """
+
+    Then my model should respond to "map_by_label" and "map_by_label!":
+      """
+        Article.should respond_to(:map_by_label)
+        Article.should respond_to(:map_by_label!)
+      """
+    
+    When I create some articles with labels:
+      """
+        Article.create :label => "moonmaster9000"
+        Article.create :label => "grantmichaels"
+      """
+
+    Then they should be indexed in my label map:
+      """
+        Article.map_by_label!.collect(&:label).should     == ["grantmichaels", "moonmaster9000"] 
+        Article.map_by_label.get!.collect(&:label).should == ["grantmichaels", "moonmaster9000"]
+      """
+
 
   @db
   Scenario: Define a map on your model with the `map` class method
@@ -110,7 +144,7 @@ Feature: CouchView
         @proxy.class.should be(CouchView::Count::Proxy)
       """
 
-  @db @focus
+  @db
   Scenario: Counting the number of rows in a reduce query
     
     Given the following map definition:

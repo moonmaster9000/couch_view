@@ -29,3 +29,15 @@ end
 Then /^`count_by_id!` should return .*:$/ do |code|
   eval code
 end
+
+When /^I pass :label to the `map` class method:$/ do |code|
+  eval code
+end
+
+When /^I create some articles with labels:$/ do |code|
+  eval code
+end
+
+Then /^they should be indexed in my label map:$/ do |code|
+  eval code
+end
