@@ -1,6 +1,7 @@
 require 'forwardable'
 require 'couchrest_model'
 require 'couch_view/map'
+require 'couch_view/config'
 require 'couch_view/couch_view'
 require 'couch_view/proxy'
 require 'couch_view/map_property'

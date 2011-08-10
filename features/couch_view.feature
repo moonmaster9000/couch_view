@@ -4,7 +4,7 @@ Feature: CouchView
   So that I can define maps and reduces on my model 
   
   
-  @db @focus
+  @db
   Scenario: Define a map over a property
     Given the following model definition:
       """
@@ -35,6 +35,62 @@ Feature: CouchView
       """
         Article.map_by_label!.collect(&:label).should     == ["grantmichaels", "moonmaster9000"] 
         Article.map_by_label.get!.collect(&:label).should == ["grantmichaels", "moonmaster9000"]
+      """
+
+
+  @db @focus
+  Scenario: Define a map on your model with conditions
+    Given the following conditions:
+      """
+        module Published
+          def conditions
+            "#{super} && doc.published == true"
+          end
+        end
+        
+        module Visible
+          def conditions
+            "#{super} && doc.visible == true"
+          end
+        end
+      """
+
+    When I add them as conditions to a map over my model's label property:
+      """
+        class Article < CouchRest::Model::Base
+          include CouchView
+
+          property :label
+          property :published, TrueClass, :default => false
+          property :visible,   TrueClass, :default => false
+
+          map :label do
+            conditions Published, Visible
+          end
+        end
+      """
+
+    And I create visible and published documents:
+      """
+        Article.create :label => "unpublished"
+        Article.create :label => "published", :published => true
+        Article.create :label => "visible", :visible => true
+        Article.create :label => "published_and_visible", :published => true, :visible => true
+      """
+
+    Then I should be able to query them through my query proxy:
+      """
+        Article.map_by_label!.collect(&:label).sort.should == 
+          ["published", "published_and_visible", "unpublished", "visible"]
+        
+        Article.map_by_label.published.get!.collect(&:label).sort.should == 
+          ["published", "published_and_visible"]
+        
+        Article.map_by_label.visible.get!.collect(&:label).sort.should == 
+          ["published_and_visible", "visible"]
+        
+        Article.map_by_label.published.visible.collect(&:label).sort.should == 
+          ["published_and_visible"]
       """
 
 

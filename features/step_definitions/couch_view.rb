@@ -41,3 +41,15 @@ end
 Then /^they should be indexed in my label map:$/ do |code|
   eval code
 end
+
+When /^I add them as conditions to a map over my model's label property:$/ do |code|
+  eval code
+end
+
+When /^I create visible and published documents:$/ do |code|
+  eval code
+end
+
+Then /^I should be able to query them through my query proxy:$/ do |code|
+  eval code
+end
