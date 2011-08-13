@@ -260,7 +260,7 @@ You can add any arbitrary reduce onto your view by using the `reduce` class meth
 
 ```ruby
     class Article < CouchRest::Model::Base
-      include CouchMap
+      include CouchView
 
       property :label
       
@@ -289,7 +289,7 @@ You find yourself needing to run more than one reduce on the same map. In that c
 
 ```ruby
     class Article < CouchRest::Model::Base
-      include CouchMap
+      include CouchView
 
       reduce :label do
         function "_count"
@@ -320,7 +320,7 @@ Also note that you can use the `view` class method to name your maps as well:
 
 ```ruby
     class Article < CouchRest::Model::Base
-      include CouchMap
+      include CouchView
       
       view :by_human_readable_label do
         map :label
