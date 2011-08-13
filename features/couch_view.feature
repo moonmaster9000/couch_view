@@ -89,7 +89,7 @@ Feature: CouchView
         Article.map_by_label.visible.get!.collect(&:label).sort.should == 
           ["published_and_visible", "visible"]
         
-        Article.map_by_label.published.visible.collect(&:label).sort.should == 
+        Article.map_by_label.published.visible.get!.collect(&:label).sort.should == 
           ["published_and_visible"]
       """
 

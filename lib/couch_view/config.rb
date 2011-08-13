@@ -25,24 +25,19 @@ module CouchView
     end
 
     def view_names 
-      [base_view_name] + @conditions.all_combinations.reject {|subset| subset == []}.map do |subset| 
-        "#{base_view_name}_" + (subset.map do |condition|
-          condition.to_s.underscore
-        end.join("_"))
-      end
+      views.keys.map &:to_s
     end
     
     def views
       all_views = {}
       all_views[base_view_name.to_sym] = {
-        :map => @map_class.new(@model, @properties).map,
+        :map => @map_class.new(@model, *@properties).map,
         :reduce => reduce
       }
       all_views.merge! condition_views
       all_views
     end
 
-    private
     def base_view_name
       if @properties.empty?
         @map_class.to_s.underscore
@@ -51,6 +46,7 @@ module CouchView
       end
     end
 
+    private
     def condition_views
       all_condition_subsets = @conditions.all_combinations.reject &:empty?
 
@@ -61,7 +57,7 @@ module CouchView
           "#{base_view_name}_" + 
           condition_combination.map {|condition| condition.to_s.underscore}.join("_")
 
-        map_instance = @map_class.new @model, @properties
+        map_instance = @map_class.new @model, *@properties
         condition_combination.map { |condition| map_instance.extend condition }
 
         result[view_name.to_sym] = {

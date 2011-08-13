@@ -2,34 +2,30 @@ module CouchView
   extend ActiveSupport::Concern
 
   module ClassMethods
-    def map(*args)
-      map_over        = args
-
-      if map_over.first.kind_of?(Symbol)
-        map_function = CouchView::Map::Property.new(self, *map_over).map 
-      else
-        map_function = map_over.first.new(self).map
+    def map(*args, &block)
+      view_config = CouchView::Config.new :model => self, :map => args
+      view_config.instance_eval &block if block
+      view_config.views.each do |view_name, view|  
+        view_by view_name, :map => view[:map], :reduce => view[:reduce]
       end
 
-      map_method_name = map_over.join("_").underscore
-      map_method_name = "by_" + map_method_name unless map_method_name[0..2] == "by_"
-      view_by map_method_name, :map => map_function, :reduce => "_count"
+      base_view_name = view_config.base_view_name
 
       instance_eval <<-METHOD
-        def map_#{map_method_name}!
-          generate_view_proxy_for("#{map_method_name}").get!
+        def map_#{base_view_name}!
+          generate_view_proxy_for("#{base_view_name}").get!
         end
 
-        def map_#{map_method_name}
-          generate_view_proxy_for "#{map_method_name}"
+        def map_#{base_view_name}
+          generate_view_proxy_for "#{base_view_name}"
         end
         
-        def count_#{map_method_name}!
-          generate_count_proxy_for("#{map_method_name}").get!
+        def count_#{base_view_name}!
+          generate_count_proxy_for("#{base_view_name}").get!
         end
 
-        def count_#{map_method_name}
-          generate_count_proxy_for "#{map_method_name}"
+        def count_#{base_view_name}
+          generate_count_proxy_for "#{base_view_name}"
         end
       METHOD
     end
