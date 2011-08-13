@@ -122,7 +122,7 @@ Feature: CouchView::Config
 
 
   @db
-  Scenario: Generating a name based on the properties passed in to map over
+  Scenario: Setting a custom reduce
     
     Given the following model:
       """
@@ -152,3 +152,53 @@ Feature: CouchView::Config
       """
         @config.reduce.should == "function(key, values){}" 
       """
+
+  
+  @db
+  Scenario: Setting conditions on the view
+    
+    Given the following model:
+      """
+        class Article < CouchRest::Model::Base
+          include CouchView
+          property :label
+          property :name
+        end
+      """
+    
+    And the following conditions:
+      """
+        module Published
+          def conditions
+            "#{super} && doc.published == true"
+          end
+        end
+        
+        module Visible
+          def conditions
+            "#{super} && doc.visible == true"
+          end
+        end
+      """
+
+    When I create a CouchView::Config to map over Article labels:
+      """
+        @config = CouchView::Config.new :model => Article, :map => [:label]
+      """
+
+    And I add the Published and Visible conditions to it:
+      """
+        @config.conditions Published, Visible
+      """
+
+    Then the conditions should be Published and Visible:
+      """
+        @config.conditions.should == [Published, Visible]
+      """
+
+    And the view names should include views for published, visible, and published/visible documents:
+      """
+        @config.view_names.sort.should == ["by_label", "by_label_published", "by_label_published_visible", "by_label_visible"]
+      """
+    
+    
