@@ -201,4 +201,88 @@ Feature: CouchView::Config
         @config.view_names.sort.should == ["by_label", "by_label_published", "by_label_published_visible", "by_label_visible"]
       """
     
+      
+  @db
+  Scenario: Getting all the views
     
+    Given the following model:
+      """
+        class Article < CouchRest::Model::Base
+          include CouchView
+          property :label
+          property :name
+        end
+      """
+    
+    And the following conditions:
+      """
+        module Published
+          def conditions
+            "#{super} && doc.published == true"
+          end
+        end
+        
+        module Visible
+          def conditions
+            "#{super} && doc.visible == true"
+          end
+        end
+      """
+
+    When I create a CouchView::Config to map over Article labels:
+      """
+        @config = CouchView::Config.new :model => Article, :map => [:label]
+      """
+
+    And I add the Published and Visible conditions to it:
+      """
+        @config.conditions Published, Visible
+      """
+
+    Then the views should include a "by_label" view:
+      """
+        @config.views[:by_label][:map].should == 
+              "
+                function(doc){
+                  if (doc['couchrest-type'] == 'Article')
+                    emit(doc.label, null)
+                }
+              "
+        @config.views[:by_label][:reduce].should == "_count"
+      """
+
+    And the views should include a "by_label_published" view:
+      """
+        @config.views[:by_label_published][:map].should == 
+              "
+                function(doc){
+                  if (doc['couchrest-type'] == 'Article' && doc.published == true)
+                    emit(doc.label, null)
+                }
+              "
+        @config.views[:by_label_published][:reduce].should == "_count"
+      """
+
+    And the views should include a "by_label_visible" view:
+      """
+        @config.views[:by_label_visible][:map].should == 
+              "
+                function(doc){
+                  if (doc['couchrest-type'] == 'Article' && doc.visible == true)
+                    emit(doc.label, null)
+                }
+              "
+        @config.views[:by_label_visible][:reduce].should == "_count"
+      """
+
+    And the views should include a "by_label_published_visible" view:
+      """
+        @config.views[:by_label_published_visible][:map].should == 
+              "
+                function(doc){
+                  if (doc['couchrest-type'] == 'Article' && doc.published == true && doc.visible == true)
+                    emit(doc.label, null)
+                }
+              "
+        @config.views[:by_label_published_visible][:reduce].should == "_count"
+      """

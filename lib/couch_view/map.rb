@@ -12,7 +12,7 @@ module CouchView
         "
           function(doc){
             if (#{conditions})
-              emit(#{key}, null)  
+              emit(#{key}, null)
           }
         "
       else
@@ -34,12 +34,11 @@ module CouchView
     
     private
     def key
-      properties = @properties.map {|p| "doc.#{p}"}.join ","
-
+      properties = @properties.map {|p| "doc.#{p}"}
       if properties.length == 1
         properties
       else
-        "[#{properties}]"
+        "[#{properties.join ", "}]"
       end
     end
   end
