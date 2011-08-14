@@ -107,8 +107,7 @@ Notice that we call the "conditions" method inside of our map. This method is mi
     ByCommentCount.new.map #==> 
       "
         function(doc){
-          if (true)
-            emit(doc.comments.length, null)
+          emit(doc.comments.length, null)
         }
       "
 ```
@@ -256,7 +255,7 @@ You can also make your `map_by_label` and `count_by_label` return immediately by
 
 ## Arbitrary Reduce
 
-You can add any arbitrary reduce onto your view by using the `reduce` class method on your model:
+You can add any arbitrary reduce onto your view by using the `reduce` class method. Just make sure to group it with a map by placing them both with a `view` block:
 
 ```ruby
     class Article < CouchRest::Model::Base
@@ -264,8 +263,9 @@ You can add any arbitrary reduce onto your view by using the `reduce` class meth
 
       property :label
       
-      reduce :label do
-        function <<-JS
+      view do
+        map :label
+        reduce <<-JS
           function(key, values){
             return sum(values)
           }
@@ -274,7 +274,7 @@ You can add any arbitrary reduce onto your view by using the `reduce` class meth
     end
 ```
 
-And now you can call it by call it with:
+And now you can call it with:
    
 ```ruby
     Article.reduce_by_label.get!
@@ -285,47 +285,23 @@ Note that you can still call `map_by_label` as well. You can't, however, call `c
 
 ## Custom Names
 
-You find yourself needing to run more than one reduce on the same map. In that case, you'll have to supply the maps with unique names using the the `view` class method:
+As you've seen, `CouchView` will generate names for your views based on the properties being mapped (or based on the name of the `CouchView::Map` class passed to `map`).
+
+You can override this default name by passing a name to the `view` method:
 
 ```ruby
     class Article < CouchRest::Model::Base
       include CouchView
 
-      reduce :label do
-        function "_count"
-      end
-      
-      view :by_label_with_doubler do
-        reduce :label do
-          function <<-JS
-            function(key, values){
-              return sum(values) * 2
-            }
-          JS
-        end
-      end
-    end
-```
-
-You can now call these reduce methods thusly:
-
-```ruby
-    Article.reduce_by_label!
-    Article.reduce_double_by_label_with_doubler!
-```
-
-Note that you can also still call `map_by_label` and `map_by_label_with_doubler` as well.
-
-Also note that you can use the `view` class method to name your maps as well:
-
-```ruby
-    class Article < CouchRest::Model::Base
-      include CouchView
-      
-      view :by_human_readable_label do
+      view :over_label do
         map :label
       end
     end
 ```
 
-In this example, you would now call `map_by_human_readable_label` or `count_by_human_readable_label` to query this view.
+You can now call your view using the `map_over_label` and `count_over_label` methods:
+
+```ruby
+    Article.map_over_label!
+    Article.count_over_label!
+```

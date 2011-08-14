@@ -53,3 +53,35 @@ end
 Then /^I should be able to query them through my query proxy:$/ do |code|
   eval code
 end
+
+Given /^a.*model:$/ do |code|
+  eval code
+end
+
+When /^I define a map over labels with a custom reduce that always returns .*:$/ do |code|
+  eval code
+end
+
+When /^I create two articles with the same label:$/ do |code|
+  eval code
+end
+
+Then /^`reduce_by_label` should return.*:$/ do |code|
+  eval code
+end
+
+When /^I call.*with.*:$/ do |code|
+  eval code
+end
+
+Then /^my model should not respond to .*:$/ do |code|
+  eval code
+end
+
+When /^I create two articles with labels:$/ do |code|
+  eval code
+end
+
+Then /^".*" should return.*:$/ do |code|
+  eval code
+end

@@ -261,3 +261,99 @@ Feature: CouchView
       """
         Article.map_by_id.get!.first.should == @article
       """
+
+
+  @db
+  Scenario: Defining a custom "reduce" on your view
+    
+    Given a Article model:
+      """
+        class Article < CouchRest::Model::Base
+          include CouchView
+          property :label
+        end
+      """
+
+    When I define a map over labels with a custom reduce that always returns -1:
+      """
+        Article.couch_view do
+          map :label
+          reduce <<-JS
+            function(key, values){
+              return -1;
+            }
+          JS
+        end
+      """
+
+    Then my model should respond to `reduce_by_label`:
+      """
+        Article.should respond_to(:reduce_by_label)
+      """
+
+    And my model should not respond to `count_by_label`:
+      """
+        Article.should_not respond_to(:count_by_label)
+      """
+
+    When I create two articles with the same label:
+      """
+        2.times { Article.create :label => "moonmaster9000-rocks" }
+      """
+
+    Then `reduce_by_label` should return -1:
+      """
+        Article.reduce_by_label!['rows'].first['value'].should == -1
+      """
+  
+  @db @focus
+  Scenario: Giving your view a custom name
+    
+    Given the following model:
+      """
+        class Article < CouchRest::Model::Base
+          include CouchView
+          property :label
+        end
+      """
+    
+    When I call "couch_view" with a custom name "over_label" and specify a map over labels in a block:
+      """
+        Article.couch_view :over_label do
+          map :label
+        end
+      """
+
+    Then my model should respond to "map_over_label" and "count_over_label":
+      """
+        Article.should respond_to(:map_over_label)
+        Article.should respond_to(:map_over_label!)
+
+        Article.should respond_to(:count_over_label)
+        Article.should respond_to(:count_over_label!)
+      """
+
+    But my model should not respond to "map_by_label" or "count_by_label":
+      """
+        Article.should_not respond_to(:map_by_label)
+        Article.should_not respond_to(:map_by_label!)
+
+        Article.should_not respond_to(:count_by_label)
+        Article.should_not respond_to(:count_by_label!)
+      """
+
+    When I create two articles with labels:
+      """
+        Article.create :label => "hi"
+        Article.create :label => "there"
+      """
+
+    Then "map_over_label" should return them:
+      """
+        Article.map_over_label!.collect(&:label).should == ["hi", "there"]
+      """
+
+    And "count_over_label" should return 2:
+      """
+        Article.count_over_label!.should == 2
+      """

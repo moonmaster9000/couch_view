@@ -2,10 +2,14 @@ module CouchView
   class Config
     attr_reader :map_class, :model, :properties, :conditions
 
-    def initialize(options)
-      @model     = options[:model]
-      @map_class, @properties = extract_map_class_data options[:map]
+    def initialize(model_class)
+      @model     = model_class
       @conditions = []
+    end
+
+    def map(*args, &block)
+      @map_class, @properties = extract_map_class_data args
+      self.instance_eval &block if block
     end
 
     def reduce(function=nil)
@@ -38,11 +42,15 @@ module CouchView
       all_views
     end
 
-    def base_view_name
-      if @properties.empty?
-        @map_class.to_s.underscore
+    def base_view_name(name=nil)
+      if name
+        @base_view_name = name
+      elsif @base_view_name
+        @base_view_name
+      elsif @properties.empty?
+        @base_view_name = @map_class.to_s.underscore
       else
-        "by_" + @properties.map(&:to_s).map(&:underscore).join("_and_")
+        @base_view_name = "by_" + @properties.map(&:to_s).map(&:underscore).join("_and_")
       end
     end
 
