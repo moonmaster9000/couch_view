@@ -2,6 +2,9 @@ Gem::Specification.new do |s|
   s.name        = "couch_view"
   s.version     = File.read "VERSION"
   s.authors     = "Matt Parker"
+  s.homepage    = "http://github.com/moonmaster9000/couch_view"
+  s.email       = "moonmaster9000@gmail.com"
+  s.description = "Modular, de-coupled views for CouchDB."
   s.summary     = "Powerful views for CouchRest::Model::Base"
   s.files       = Dir["lib/**/*"] << "readme.markdown"
   s.test_files  = Dir["features/**/*"]
