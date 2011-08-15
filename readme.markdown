@@ -255,7 +255,7 @@ You can also make your `map_by_label` and `count_by_label` return immediately by
 
 ## Arbitrary Reduce
 
-You can add any arbitrary reduce onto your view by using the `reduce` class method. Just make sure to group it with a map by placing them both with a `view` block:
+You can add any arbitrary reduce onto your view by using the `reduce` class method. Just make sure to group it with a map by placing them both within a `couch_view` block:
 
 ```ruby
     class Article < CouchRest::Model::Base
@@ -263,7 +263,7 @@ You can add any arbitrary reduce onto your view by using the `reduce` class meth
 
       property :label
       
-      view do
+      couch_view do
         map :label
         reduce <<-JS
           function(key, values){
@@ -287,13 +287,13 @@ Note that you can still call `map_by_label` as well. You can't, however, call `c
 
 As you've seen, `CouchView` will generate names for your views based on the properties being mapped (or based on the name of the `CouchView::Map` class passed to `map`).
 
-You can override this default name by passing a name to the `view` method:
+You can override this default name by passing a name to the `couch_view` method:
 
 ```ruby
     class Article < CouchRest::Model::Base
       include CouchView
 
-      view :over_label do
+      couch_view :over_label do
         map :label
       end
     end
