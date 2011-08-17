@@ -9,6 +9,7 @@ module CouchView
     def_delegators :@_query_options, 
       :limit,          :limit!,                         
       :skip,           :skip!,
+      :key,            :key!,
       :startkey,       :startkey!,
       :endkey,         :endkey!,
       :startkey_docid, :startkey_docid!,
