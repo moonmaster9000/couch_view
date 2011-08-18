@@ -85,3 +85,15 @@ end
 Then /^".*" should return.*:$/ do |code|
   eval code
 end
+
+When /^I define a map over labels that includes a published condition:$/ do |code|
+  eval code
+end
+
+Then /^Article should respond to ".*":$/ do |code|
+  eval code
+end
+
+When /^I update the map over label definition with a visible condition:$/ do |code|
+  eval code
+end

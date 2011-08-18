@@ -1,10 +1,10 @@
+@db
 Feature: CouchView
   As a programmer
   I want a `CouchView` mixin for my `CouchRest::Model::Base` models
   So that I can define maps and reduces on my model 
   
   
-  @db
   Scenario: Define a map over a property
     Given the following model definition:
       """
@@ -38,7 +38,6 @@ Feature: CouchView
       """
 
 
-  @db @focus
   Scenario: Define a map on your model with conditions
     Given the following conditions:
       """
@@ -94,7 +93,6 @@ Feature: CouchView
       """
 
 
-  @db
   Scenario: Define a map on your model with the `map` class method
     Given the following map definition:
       """
@@ -123,7 +121,6 @@ Feature: CouchView
       """
 
 
-  @db
   Scenario: Retrieve a map proxy
     
     Given the following map definition:
@@ -162,7 +159,6 @@ Feature: CouchView
       """
 
 
-  @db
   Scenario: Generate a reduce proxy for counting the number of results in your query
 
     Given the following map definition:
@@ -200,7 +196,7 @@ Feature: CouchView
         @proxy.class.should be(CouchView::Count::Proxy)
       """
 
-  @db
+
   Scenario: Counting the number of rows in a reduce query
     
     Given the following map definition:
@@ -228,7 +224,7 @@ Feature: CouchView
         Article.count_by_id!.should == 4
       """
 
-  @db
+
   Scenario: Query a map on your model
     
     Given the following map definition:
@@ -263,7 +259,6 @@ Feature: CouchView
       """
 
 
-  @db
   Scenario: Defining a custom "reduce" on your view
     
     Given a Article model:
@@ -306,7 +301,7 @@ Feature: CouchView
         Article.reduce_by_label!['rows'].first['value'].should == -1
       """
   
-  @db @focus
+  
   Scenario: Giving your view a custom name
     
     Given the following model:
@@ -356,4 +351,64 @@ Feature: CouchView
     And "count_over_label" should return 2:
       """
         Article.count_over_label!.should == 2
+      """
+
+
+  @focus
+  Scenario: Chaining together multiple conditions by defining a map multiple times
+    
+    Given the following model:
+      """
+        class Article < CouchRest::Model::Base
+          include CouchView
+        end
+      """
+    
+    And the following conditions:
+      """
+        module Published
+          def conditions
+            "#{super} && doc.published == true"
+          end
+        end
+        
+        module Visible
+          def conditions
+            "#{super} && doc.visible == true"
+          end
+        end
+      """
+
+    When I define a map over labels that includes a published condition:
+      """
+        Article.map :label do
+          conditions Published
+        end
+      """
+
+    Then Article should respond to "by_by_label_published":
+      """
+        proc { Article.by_by_label_published }.should_not raise_exception
+      """
+
+    When I update the map over label definition with a visible condition:
+      """
+        Article.map :label do
+          conditions Visible
+        end
+      """
+
+    Then Article should respond to "by_by_label_published":
+      """
+        proc { Article.by_by_label_published }.should_not raise_exception
+      """
+
+    Then Article should respond to "by_by_label_visible":
+      """
+        proc { Article.by_by_label_visible }.should_not raise_exception
+      """
+
+    Then Article should respond to "by_by_label_published_visible":
+      """
+        proc { Article.by_by_label_published_visible }.should_not raise_exception
       """

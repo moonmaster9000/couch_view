@@ -12,11 +12,18 @@ module CouchView
       view_config = CouchView::Config.new self
       view_config.instance_eval &block
       view_config.base_view_name name if name
+      base_view_name = view_config.base_view_name
+
+      if view_configs[base_view_name]
+        view_config.conditions *view_configs[base_view_name].conditions
+        view_configs[base_view_name] = view_config
+      else
+        view_configs[base_view_name] = view_config
+      end
+
       view_config.views.each do |view_name, view|  
         view_by view_name, :map => view[:map], :reduce => view[:reduce]
       end
-
-      base_view_name = view_config.base_view_name
 
       instance_eval <<-METHODS
         def map_#{base_view_name}!
@@ -56,6 +63,10 @@ module CouchView
 
     def generate_view_proxy_for(view)
       CouchView::Proxy.new self, "by_#{view}".to_sym
+    end
+
+    def view_configs
+      @view_configs ||= {}
     end
   end
 end
