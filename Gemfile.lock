@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    couch_view (0.0.1)
+    couch_view (0.0.2)
       couchrest (= 1.0.1)
       couchrest_model (~> 1.0.0)
 

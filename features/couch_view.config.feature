@@ -86,7 +86,17 @@ Feature: CouchView::Config
             "reduce" => "_count"
           }
         }
+    
 
+  Conditions are additive; the more you call conditions, the more conditions get added to it. If you attempt to add the same condition twice, it will silently ignore the second attempt:
+      
+      config = CouchView::Config.new Article
+      config.conditions Published
+      config.conditions #==> [Published]
+      condig.conditions Visible
+      config.conditions #==> [Published, Visible]
+      config.conditions Published
+      config.conditions #==> [Published, Visible]
 
   @db
   Scenario: Generating a name based on the properties passed in to map over
@@ -224,7 +234,7 @@ Feature: CouchView::Config
       """
     
 
-  @db @focus
+  @db
   Scenario: Creating conditions by passing a block to the map
     
     Given the following model:
@@ -347,7 +357,7 @@ Feature: CouchView::Config
       """
 
 
-  @db @focus
+  @db
   Scenario: Giving your view a custom base name
     
     Given the following model:
@@ -393,4 +403,47 @@ Feature: CouchView::Config
     Then the view names should include "funny" views for published, visible, and published/visible documents:
       """
         @config.view_names.sort.should == ["funny", "funny_published", "funny_published_visible", "funny_visible"]
+      """
+
+
+  @db @focus
+  Scenario: Adding the same condition multiple times to a config will result in the condition only being added once
+     
+    Given the following model:
+      """
+        class Article < CouchRest::Model::Base
+          include CouchView
+        end
+      """
+    
+    And the following conditions:
+      """
+        module Published
+          def conditions
+            "#{super} && doc.published == true"
+          end
+        end
+        
+        module Visible
+          def conditions
+            "#{super} && doc.visible == true"
+          end
+        end
+      """
+
+    When I create a CouchView::Config for my Article model:
+      """
+        @config = CouchView::Config.new Article
+      """
+
+    Then adding the same condition multiple times will result in the condition only being added once:
+      """
+        @config.conditions Published
+        @config.conditions.should == [Published]
+        @config.conditions Visible
+        @config.conditions.should == [Published, Visible]
+        @config.conditions Published
+        @config.conditions.should == [Published, Visible]
+        @config.conditions Visible
+        @config.conditions.should == [Published, Visible]
       """

@@ -25,6 +25,7 @@ module CouchView
         @conditions
       else
         @conditions += args
+        @conditions.uniq!
       end
     end
 
