@@ -1,2 +1,5 @@
+v0.0.3
+  -- conditions are now additive if a map is defined multiple times
+
 v0.0.2
   -- add support for "key" query option (duh!)
