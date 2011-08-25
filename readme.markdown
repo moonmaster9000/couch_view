@@ -209,7 +209,9 @@ class Article
 end
 ```
 
-Now, in order to use these conditions, we'll need to tell `couch_view` what to name them:
+If we added these conditions to a map, the condition names would not be qualified.
+
+If you'd prefer that they be qualified, you'll need to tell `couch_view` what to name them:
 
 ```ruby
 class Article < CouchRest::Model::Base
@@ -221,11 +223,17 @@ class Article < CouchRest::Model::Base
 
   map :label do
     conditions do
-      web_exclusive Conditions::WebExclusive
-      published     Conditions::Published
+      filter_by_web_exclusive Conditions::WebExclusive
+      filter_by_published     Conditions::Published
     end
   end
 end
+```
+
+Now you can use these conditions on your proxy:
+
+```ruby
+Article.map_by_label.filter_by_web_exclusive.filter_by_published.each {...}
 ```
 
 ## Query Proxy

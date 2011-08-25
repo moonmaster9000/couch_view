@@ -92,11 +92,11 @@ Feature: CouchView::Config
       
       config = CouchView::Config.new Article
       config.conditions Published
-      config.conditions #==> [Published]
+      config.conditions #==> {:published => Published}
       condig.conditions Visible
-      config.conditions #==> [Published, Visible]
+      config.conditions #==> {:published => Published, :visible => Visible}
       config.conditions Published
-      config.conditions #==> [Published, Visible]
+      config.conditions #==> {:published => Published, :visible => Visible}
 
   @db
   Scenario: Generating a name based on the properties passed in to map over
@@ -225,7 +225,7 @@ Feature: CouchView::Config
 
     Then the conditions should be Published and Visible:
       """
-        @config.conditions.should == [Published, Visible]
+        @config.conditions.should == {:published => Published, :visible => Visible}
       """
 
     And the view names should include views for published, visible, and published/visible documents:
@@ -267,7 +267,7 @@ Feature: CouchView::Config
 
     Then the conditions method on my config should return the conditions specified:
       """
-        @config.conditions.should == [Published, Visible] 
+        @config.conditions.should == {:published => Published, :visible => Visible}
       """
 
   @db
@@ -439,11 +439,11 @@ Feature: CouchView::Config
     Then adding the same condition multiple times will result in the condition only being added once:
       """
         @config.conditions Published
-        @config.conditions.should == [Published]
+        @config.conditions.should == {:published => Published}
         @config.conditions Visible
-        @config.conditions.should == [Published, Visible]
+        @config.conditions.should == {:published => Published, :visible => Visible}
         @config.conditions Published
-        @config.conditions.should == [Published, Visible]
+        @config.conditions.should == {:published => Published, :visible => Visible}
         @config.conditions Visible
-        @config.conditions.should == [Published, Visible]
+        @config.conditions.should == {:published => Published, :visible => Visible}
       """

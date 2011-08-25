@@ -4,7 +4,7 @@ module CouchView
 
     def initialize(model_class)
       @model     = model_class
-      @conditions = []
+      @conditions = CouchView::Config::Conditions.new
     end
 
     def map(*args, &block)
@@ -20,12 +20,12 @@ module CouchView
       end
     end
 
-    def conditions(*args)
-      if args.empty?
-        @conditions
+    def conditions(*args, &block)
+      if args.empty? && block.nil?
+        @conditions.conditions
       else
-        @conditions += args
-        @conditions.uniq!
+        @conditions.add_conditions *args
+        @conditions.instance_eval &block if block
       end
     end
 
@@ -57,17 +57,17 @@ module CouchView
 
     private
     def condition_views
-      all_condition_subsets = @conditions.all_combinations.reject &:empty?
+      all_condition_subsets = @conditions.conditions.keys.all_combinations.reject &:empty?
 
       all_condition_subsets.reject(&:empty?).inject({}) do |result, condition_combination|
         condition_combination.sort! {|a,b| a.to_s <=> b.to_s}
         
         view_name = 
           "#{base_view_name}_" + 
-          condition_combination.map {|condition| condition.to_s.underscore}.join("_")
+          condition_combination.map {|condition| condition.to_s}.join("_")
 
         map_instance = @map_class.new @model, *@properties
-        condition_combination.map { |condition| map_instance.extend condition }
+        condition_combination.map { |condition| map_instance.extend @conditions.conditions[condition] }
 
         result[view_name.to_sym] = {
           :map => map_instance.map,
