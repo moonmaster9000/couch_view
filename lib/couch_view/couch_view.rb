@@ -13,11 +13,14 @@ module CouchView
       view_config.instance_eval &block
       view_config.base_view_name name if name
       base_view_name = view_config.base_view_name
-
+      
+      # if this view has already been configured before
       if view_configs[base_view_name]
+        # copy all of the old conditions into the new view_config
         view_configs[base_view_name].conditions.each do |condition_name, condition_module|
           view_config.conditions_config.send condition_name, condition_module
         end
+        # replace the old view_config with the new view_config
         view_configs[base_view_name] = view_config
       else
         view_configs[base_view_name] = view_config
