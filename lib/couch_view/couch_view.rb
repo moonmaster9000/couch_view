@@ -15,7 +15,9 @@ module CouchView
       base_view_name = view_config.base_view_name
 
       if view_configs[base_view_name]
-        view_config.conditions *view_configs[base_view_name].conditions
+        view_configs[base_view_name].conditions.each do |condition_name, condition_module|
+          view_config.conditions_config.send condition_name, condition_module
+        end
         view_configs[base_view_name] = view_config
       else
         view_configs[base_view_name] = view_config

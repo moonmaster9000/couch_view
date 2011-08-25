@@ -19,6 +19,10 @@ module CouchView
         @reduce ||= "_count"
       end
     end
+    
+    def conditions_config
+      @conditions
+    end
 
     def conditions(*args, &block)
       if args.empty? && block.nil?
