@@ -92,6 +92,67 @@ Feature: CouchView
           ["published_and_visible"]
       """
 
+  
+  @focus
+  Scenario: Define a map on your model with named conditions
+    Given the following conditions:
+      """
+        module Conditions
+          module Published
+            def conditions
+              "#{super} && doc.published == true"
+            end
+          end
+          
+          module Visible
+            def conditions
+              "#{super} && doc.visible == true"
+            end
+          end
+        end
+      """
+
+    When I add them as conditions to a map over my model's label property:
+      """
+        class Article < CouchRest::Model::Base
+          include CouchView
+
+          property :label
+          property :published, TrueClass, :default => false
+          property :visible,   TrueClass, :default => false
+
+          map :label do
+            conditions do
+              filter_by_published  Conditions::Published
+              filter_by_visible    Conditions::Visible
+            end
+          end
+        end
+      """
+
+    And I create visible and published documents:
+      """
+        Article.create :label => "unpublished"
+        Article.create :label => "published", :published => true
+        Article.create :label => "visible", :visible => true
+        Article.create :label => "published_and_visible", :published => true, :visible => true
+      """
+
+    Then I should be able to query them through my query proxy:
+      """
+        Article.map_by_label!.collect(&:label).sort.should == 
+          ["published", "published_and_visible", "unpublished", "visible"]
+        
+        Article.map_by_label.filter_by_published.get!.collect(&:label).sort.should == 
+          ["published", "published_and_visible"]
+        
+        Article.map_by_label.filter_by_visible.get!.collect(&:label).sort.should == 
+          ["published_and_visible", "visible"]
+        
+        Article.map_by_label.filter_by_published.filter_by_visible.get!.collect(&:label).sort.should == 
+          ["published_and_visible"]
+      """
+
 
   Scenario: Define a map on your model with the `map` class method
     Given the following map definition:
@@ -354,7 +415,6 @@ Feature: CouchView
       """
 
 
-  @focus
   Scenario: Chaining together multiple conditions by defining a map multiple times
     
     Given the following model:
