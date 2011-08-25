@@ -1,3 +1,6 @@
+v0.1.1
+  -- bug fix: conditions were no longer working when set additively
+
 v0.1.0
   -- the name of the conditions on a map/reduce can now be overriden; they default to the unqualified module name. See the README.
 
