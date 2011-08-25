@@ -1,3 +1,6 @@
+v0.1.0
+  -- the name of the conditions on a map/reduce can now be overriden; they default to the unqualified module name. See the README.
+
 v0.0.3
   -- conditions are now additive if a map is defined multiple times
 
