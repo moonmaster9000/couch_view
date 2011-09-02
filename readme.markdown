@@ -270,6 +270,7 @@ Here's the full list of CouchDB query parameters that `CouchView` supports:
 ```ruby
 limit       
 skip           
+key
 startkey       
 endkey         
 startkey_docid 
@@ -282,6 +283,8 @@ reduce
 include_docs   
 update_seq     
 ```
+
+You can read about what each of these keys do here: http://wiki.apache.org/couchdb/HTTP_view_API
 
 Your query will execute when you call `each` or `get!` on it:  
 
