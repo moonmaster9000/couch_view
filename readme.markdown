@@ -1,5 +1,7 @@
 # CouchView
 
+[![Build Status](https://secure.travis-ci.org/moonmaster9000/couch_view.png)](http://travis-ci.org/moonmaster9000/couch_view)
+
 A decorator library for generating CouchDB view (map/reduce) functions for CouchRest::Model models. 
 
 ## Why?
