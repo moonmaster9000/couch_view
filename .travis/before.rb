@@ -2,9 +2,9 @@
 
 puts "running before script..."
 
-cucumber_env = File.read("features/support/env.rb")
+cucumber_env = File.read("features/setup/env.rb")
 
-File.open("features/support/env.rb", "w") do |f| 
+File.open("features/setup/env.rb", "w") do |f| 
   f.write cucumber_env.gsub('admin:password@', '')
 end
 
